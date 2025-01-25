@@ -9,7 +9,7 @@ function App() {
                 <input
                     type="text"
                     placeholder="Search"
-                    className={style.input}
+                    className={"bg-blue-900 p-10 text-red-500"}
                 />
             </div>
         </div>
