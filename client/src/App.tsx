@@ -3,20 +3,25 @@ import { NoteBody } from "./config/types";
 import "./App.css";
 import useFetch from "./hooks/useFetch";
 import NoteItem from "./components/NoteItem";
-import CreateNote from "./components/CreateNote";
+import FormNote from "./components/FormNote";
+import NoteDetail from "./components/NoteDetails";
+import NoteActions from "./components/NoteActions";
 
 const LIMIT = 10;
 function App() {
-    const [page, setPage] = useState(0);
     const noteListRef = useRef<HTMLDivElement | null>(null);
+    const [page, setPage] = useState(0);
     const [selected, setSelected] = useState<NoteBody | null>(null);
-    const [createMode, setCreateMode] = useState<boolean>(true);
+    const [createMode, setCreateMode] = useState<boolean>(false);
+    const [newNote, setNewNote] = useState<NoteBody[] | []>([]);
 
     const {
         data: notes,
         loading,
         error,
         hasMore,
+        refetch,
+        clearData,
     } = useFetch(
         "/notes",
         useMemo(
@@ -41,6 +46,10 @@ function App() {
         }
     }, [loading, hasMore]);
 
+    useEffect(() => {
+        setCreateMode(false);
+    }, [selected]);
+
     const handleScroll = () => {
         const { scrollTop, scrollHeight, clientHeight }: any =
             noteListRef.current;
@@ -54,6 +63,21 @@ function App() {
         }
     };
 
+    // Combine old notes and newNote
+    const combinedNotes = useMemo(() => {
+        return [...notes, ...newNote].sort((a, b) =>
+            a.created_at > b.created_at ? -1 : 1
+        );
+    }, [notes, newNote]);
+
+    async function handleDelete() {
+        await clearData();
+        await refetch();
+        setPage(0);
+        setNewNote([]);
+        setSelected(null);
+    }
+
     return (
         <div className="App">
             <div className="container mx-auto flex shadow-lg ">
@@ -62,11 +86,12 @@ function App() {
                     style={{ height: "800px" }}
                     ref={noteListRef}
                 >
-                    {notes.map((item: NoteBody, index: number) => (
+                    {combinedNotes.map((item: NoteBody, index: number) => (
                         <NoteItem
                             note={item}
                             key={index}
                             onClick={() => setSelected(item)}
+                            isSelected={selected?.id === item.id}
                         />
                     ))}
                     {error && <p>Error fetching notes...</p>}
@@ -74,15 +99,6 @@ function App() {
                     {!hasMore && <p>End of list</p>}
                 </div>
                 <div className="flex-1 p-4">
-                    {selected && (
-                        <div className="p-2 border-b border-solid border-gray-300">
-                            <h2 className="text-xl font-bold mb-2">
-                                {selected.title}
-                            </h2>
-                            <p className="mb-4">{selected.description}</p>
-                        </div>
-                    )}
-
                     {!selected && !createMode && (
                         <div className="p-2 border-b border-solid border-gray-300">
                             <h2 className="text-xl font-bold mb-2">
@@ -97,8 +113,23 @@ function App() {
                             </h2>
                         </div>
                     )}
+                    {selected && (
+                        <NoteActions
+                            note={selected}
+                            onError={() => {}}
+                            onDeleteSuccess={handleDelete}
+                        />
+                    )}
+                    {selected && <NoteDetail note={selected} />}
                     {createMode && (
-                        <CreateNote onSuccess={() => {}} onCancel={() => {}} />
+                        <FormNote
+                            onSuccess={(newNote: NoteBody) => {
+                                setNewNote([newNote]);
+                                setCreateMode(false);
+                                setSelected(newNote);
+                            }}
+                            onCancel={() => setCreateMode(false)}
+                        />
                     )}
                 </div>
             </div>

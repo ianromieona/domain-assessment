@@ -10,7 +10,7 @@ const getAll = async (req: Request, res: Response) => {
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = parseInt(req.query.offset as string) || 0;
 
-        const data = await notesModel.getAll({ limit, offset });
+        const data = await notesModel.getAll({ limit, offset, order: "desc" });
 
         ApiResponse.success(req, res, "Note successfully retrieved", data);
     } catch (e: any) {

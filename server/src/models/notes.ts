@@ -4,14 +4,16 @@ import config from "../config/config";
 const getAll = async ({
     limit = 10,
     offset = 0,
+    order = "asc",
 }: {
     limit: number;
     offset: number;
+    order: "asc" | "desc";
 }) => {
     try {
         const snapshot = await db
             .collection(config.collection_name)
-            .orderBy("created_at")
+            .orderBy("created_at", order)
             .offset(offset)
             .limit(limit)
             .get();

@@ -4,16 +4,16 @@ import { NoteBody } from "../config/types";
 
 const baseUrl: string = "http://localhost:4000/api";
 
-const CreateNote: React.FC<{ onSuccess: () => void; onCancel: () => void }> = ({
-    onSuccess,
-    onCancel,
-}) => {
+const CreateNote: React.FC<{
+    onSuccess: (newResponse: NoteBody) => void;
+    onCancel: () => void;
+}> = ({ onSuccess, onCancel }) => {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [errors, setErrors] = React.useState<string[]>([]);
 
     async function createNote(body: NoteBody) {
         let error = false;
-        let data = false;
+        let data: NoteBody | null = null;
 
         try {
             setLoading(true);
@@ -58,8 +58,8 @@ const CreateNote: React.FC<{ onSuccess: () => void; onCancel: () => void }> = ({
 
         const { error, data } = await createNote(newNote as NoteBody);
 
-        if (!error) {
-            onSuccess();
+        if (!error && data) {
+            onSuccess(data);
         } else {
             alert("Error creating note");
         }
@@ -81,6 +81,7 @@ const CreateNote: React.FC<{ onSuccess: () => void; onCancel: () => void }> = ({
                         name="title"
                         id="title"
                         className="mt-1 p-2 border border-gray-300 rounded-lg w-full"
+                        disabled={loading}
                     />
                     {errors.includes("Title is required") && (
                         <p className="text-red-500 text-xs mt-1">
@@ -99,6 +100,7 @@ const CreateNote: React.FC<{ onSuccess: () => void; onCancel: () => void }> = ({
                         name="description"
                         id="description"
                         className="mt-1 p-2 border border-gray-300 rounded-lg w-full"
+                        disabled={loading}
                     />
                     {errors.includes("Description is required") && (
                         <p className="text-red-500 text-xs mt-1">
@@ -120,8 +122,9 @@ const CreateNote: React.FC<{ onSuccess: () => void; onCancel: () => void }> = ({
                     <button
                         type="submit"
                         className="bg-blue-500 text-white p-2 rounded-lg"
+                        disabled={loading}
                     >
-                        Create
+                        {loading ? "Loading..." : "Submit"}
                     </button>
                 </div>
             </form>
