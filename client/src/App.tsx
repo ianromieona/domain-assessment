@@ -1,140 +1,203 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
-import { NoteBody } from "./config/types";
-import "./App.css";
-import useFetch from "./hooks/useFetch";
-import NoteItem from "./components/NoteItem";
-import FormNote from "./components/FormNote";
-import NoteDetail from "./components/NoteDetails";
-import NoteActions from "./components/NoteActions";
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { useDebounce } from 'use-debounce';
+import { NoteBody } from './config/types';
+import { api } from './api';
+import './App.css';
+import NoteItem from './components/NoteItem';
+import NoteForm from './components/NoteForm';
+import NoteDetail from './components/NoteDetails';
+import NoteActions from './components/NoteActions';
+import { ToastContainer } from 'react-toastify';
+import NoteIcon from './icons/NoteIcon';
 
-const LIMIT = 10;
+const LIMIT = 13;
 function App() {
-    const noteListRef = useRef<HTMLDivElement | null>(null);
-    const [page, setPage] = useState(0);
-    const [selected, setSelected] = useState<NoteBody | null>(null);
-    const [createMode, setCreateMode] = useState<boolean>(false);
-    const [newNote, setNewNote] = useState<NoteBody[] | []>([]);
+  const noteListRef = useRef<HTMLDivElement | null>(null);
+  const [page, setPage] = useState(0);
+  const [selected, setSelected] = useState<NoteBody | null>(null);
+  const [formMode, setFormMode] = useState<boolean>(false);
+  const [text, setText] = useState<string>('');
+  const [value] = useDebounce(text, 1000);
+  const [notes, setNotes] = useState<any>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
-    const {
-        data: notes,
-        loading,
-        error,
-        hasMore,
-        refetch,
-        clearData,
-    } = useFetch(
-        "/notes",
-        useMemo(
-            () => ({
-                method: "GET",
-                params: { limit: LIMIT, offset: page * LIMIT },
-            }),
-            [page]
-        )
-    );
+  useEffect(() => {
+    const noteRef: HTMLDivElement | null = noteListRef.current;
+    if (noteRef) {
+      noteRef.addEventListener('scroll', handleScroll);
 
-    useEffect(() => {
-        const noteRef: HTMLDivElement | null = noteListRef.current;
+      return () => {
         if (noteRef) {
-            noteRef.addEventListener("scroll", handleScroll);
-
-            return () => {
-                if (noteRef) {
-                    noteRef.removeEventListener("scroll", handleScroll);
-                }
-            };
+          noteRef.removeEventListener('scroll', handleScroll);
         }
-    }, [loading, hasMore]);
-
-    useEffect(() => {
-        setCreateMode(false);
-    }, [selected]);
-
-    const handleScroll = () => {
-        const { scrollTop, scrollHeight, clientHeight }: any =
-            noteListRef.current;
-
-        if (
-            scrollTop + clientHeight >= scrollHeight - 5 &&
-            !loading &&
-            hasMore
-        ) {
-            setPage((prevPage) => prevPage + 1);
-        }
-    };
-
-    // Combine old notes and newNote
-    const combinedNotes = useMemo(() => {
-        return [...notes, ...newNote].sort((a, b) =>
-            a.created_at > b.created_at ? -1 : 1
-        );
-    }, [notes, newNote]);
-
-    async function handleDelete() {
-        await clearData();
-        await refetch();
-        setPage(0);
-        setNewNote([]);
-        setSelected(null);
+      };
     }
+  }, [loading, hasMore]);
 
-    return (
-        <div className="App">
-            <div className="container mx-auto flex shadow-lg ">
-                <div
-                    className="w-72 p-4 border-r border-solid border-gray-300  overflow-y-auto"
-                    style={{ height: "800px" }}
-                    ref={noteListRef}
-                >
-                    {combinedNotes.map((item: NoteBody, index: number) => (
-                        <NoteItem
-                            note={item}
-                            key={index}
-                            onClick={() => setSelected(item)}
-                            isSelected={selected?.id === item.id}
-                        />
-                    ))}
-                    {error && <p>Error fetching notes...</p>}
-                    {loading && <p>Loading...</p>}
-                    {!hasMore && <p>End of list</p>}
-                </div>
-                <div className="flex-1 p-4">
-                    {!selected && !createMode && (
-                        <div className="p-2 border-b border-solid border-gray-300">
-                            <h2 className="text-xl font-bold mb-2">
-                                Select a note{" "}
-                                <button
-                                    type="button"
-                                    onClick={() => setCreateMode(true)}
-                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs"
-                                >
-                                    Create new Note
-                                </button>
-                            </h2>
-                        </div>
-                    )}
-                    {selected && (
-                        <NoteActions
-                            note={selected}
-                            onError={() => {}}
-                            onDeleteSuccess={handleDelete}
-                        />
-                    )}
-                    {selected && <NoteDetail note={selected} />}
-                    {createMode && (
-                        <FormNote
-                            onSuccess={(newNote: NoteBody) => {
-                                setNewNote([newNote]);
-                                setCreateMode(false);
-                                setSelected(newNote);
-                            }}
-                            onCancel={() => setCreateMode(false)}
-                        />
-                    )}
-                </div>
-            </div>
-        </div>
+  useEffect(() => {
+    fetchNotes(page, '');
+  }, [page]);
+
+  useEffect(() => {
+    fetchNotes(page, value, true);
+  }, [value]);
+
+  const handleScroll = () => {
+    const { scrollTop, scrollHeight, clientHeight }: any = noteListRef.current;
+
+    if (scrollTop + clientHeight >= scrollHeight - 5 && !loading && hasMore) {
+      console.log('ad');
+      setPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  /**
+   * Filter out duplicate notes
+   */
+  const definedNotes = useMemo(() => {
+    const uniqueNotes = notes.reduce((acc: NoteBody[], note: NoteBody) => {
+      if (!acc.find((item) => item.id === note.id)) {
+        acc.push(note);
+      }
+      return acc;
+    }, []);
+    return uniqueNotes.sort((a: NoteBody, b: NoteBody) =>
+      a.created_at > b.created_at ? -1 : 1,
     );
+  }, [notes]);
+
+  /**
+   * Fetch notes
+   * @param page - page number
+   * @param clear - clear notes data, reset page to 0
+   */
+  const fetchNotes = async (
+    page: number,
+    query: string,
+    clear: boolean = false,
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.notes.getAll({
+        limit: LIMIT,
+        offset: page * LIMIT,
+        query,
+      });
+      const data = await response.data;
+      if (data.length === 0 && !clear) {
+        setHasMore(false);
+      }
+      if (clear) {
+        setNotes(data);
+        setHasMore(true);
+      } else {
+        setNotes((prevData: NoteBody[]) => [...prevData, ...data]);
+      }
+    } catch (error) {
+      setError('Error fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle delete note action request
+   */
+  async function handleDelete() {
+    setSelected(null);
+    setHasMore(true);
+    fetchNotes(0, '', true);
+  }
+
+  return (
+    <div className="App">
+      <div className="flex shadow-lg h-screen">
+        <div className="w-72 border-r border-solid border-gray-300 flex flex-col">
+          <h3 className="bg-gray-100 p-2">
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-lg w-full"
+              onChange={(e) => {
+                setText(e.target.value);
+              }}
+            />
+          </h3>
+
+          <div className="p-2  h-screen overflow-y-auto" ref={noteListRef}>
+            {definedNotes.map((item: NoteBody, index: number) => (
+              <NoteItem
+                note={item}
+                key={index}
+                onClick={() => {
+                  setSelected(item);
+                  setFormMode(false);
+                }}
+                isSelected={selected?.id === item.id}
+              />
+            ))}
+            {error && <p>Error fetching notes...</p>}
+            {!loading && definedNotes.length === 0 && (
+              <p className="text-center text-xs my-3 text-gray-400">
+                No notes found
+              </p>
+            )}
+            {loading && (
+              <p className="text-center text-xs text-gray-400 my-4">
+                Loading...
+              </p>
+            )}
+            {!hasMore && (
+              <p className="text-center text-xs my-3 text-gray-400">
+                End of list
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex-1">
+          {!selected && !formMode && (
+            <div className="p-2 flex flex-col items-center justify-center h-full">
+              <NoteIcon width={100} />
+              <h3 className="font-light text-gray-600">Please select a note</h3>
+              <button
+                type="button"
+                onClick={() => setFormMode(true)}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mt-5"
+              >
+                Create a new note
+              </button>
+            </div>
+          )}
+          {selected && !formMode && (
+            <NoteActions
+              note={selected}
+              onDeleteSuccess={handleDelete}
+              onEditTrigger={() => setFormMode(true)}
+              onCreateTrigger={() => {
+                setSelected(null);
+                setFormMode(true);
+              }}
+            />
+          )}
+          {selected && !formMode && <NoteDetail note={selected} />}
+          {formMode && (
+            <NoteForm
+              onSuccess={(newNote: NoteBody) => {
+                setNotes((prev: NoteBody[]) => [newNote, ...prev]);
+                setFormMode(false);
+                setSelected(newNote);
+              }}
+              selectedNote={selected || null}
+              onCancel={() => setFormMode(false)}
+            />
+          )}
+        </div>
+      </div>
+      <ToastContainer />
+    </div>
+  );
 }
 
 export default App;

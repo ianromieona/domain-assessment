@@ -1,22 +1,36 @@
 import db from "../config/firebase";
 import config from "../config/config";
 
+/**
+ * Get all notes
+ * @param param0 
+ * @returns Note[] | null
+ */
 const getAll = async ({
     limit = 10,
     offset = 0,
     order = "asc",
+    query = "",
 }: {
     limit: number;
     offset: number;
     order: "asc" | "desc";
+    query: string
 }) => {
     try {
-        const snapshot = await db
-            .collection(config.collection_name)
+        let queryRef = db.collection(config.collection_name)
             .orderBy("created_at", order)
             .offset(offset)
-            .limit(limit)
-            .get();
+            .limit(limit);
+
+        if (query) {
+            queryRef = queryRef.where('title', '>=', query)
+                               .where('title', '<=', query + '\uf8ff')
+                               .where('description', '>=', query)
+                               .where('description', '<=', query + '\uf8ff');
+        }
+
+        const snapshot = await queryRef.get();
 
         const data = snapshot.docs.map((doc: any) => {
             const docData = doc.data();
@@ -27,14 +41,18 @@ const getAll = async ({
                 created_at: createdAt,
             };
         });
-
         return data;
     } catch (e: any) {
         console.log(e);
-        return null;
+        return [];
     }
 };
 
+/**
+ * Get note by id
+ * @param id 
+ * @returns Note | null
+ */
 const getById = async (id: string) => {
     try {
         const noteRef = db.collection(config.collection_name).doc(id);
@@ -51,11 +69,15 @@ const getById = async (id: string) => {
             created_at: data?.created_at.toDate(),
         };
     } catch (e: any) {
-        console.log(e);
         return null;
     }
 };
 
+/**
+ * Create new note
+ * @param id 
+ * @returns Note | null
+ */
 const create = async ({
     title,
     description,
@@ -79,11 +101,15 @@ const create = async ({
             ...newNote,
         };
     } catch (e: any) {
-        console.log(e);
         return null;
     }
 };
 
+/**
+ * Update note
+ * @param id 
+ * @returns Note | null
+ */
 const update = async (
     id: string,
     updateData: { title?: string; description?: string }
@@ -105,18 +131,21 @@ const update = async (
             created_at: data?.created_at.toDate(),
         };
     } catch (e: any) {
-        console.log(e);
         return null;
     }
 };
 
+/**
+ * Remove note
+ * @param id 
+ * @returns Note | null
+ */
 const remove = async (id: string) => {
     try {
         const noteRef = db.collection(config.collection_name).doc(id);
         await noteRef.delete();
         return { id };
     } catch (e: any) {
-        console.log(e);
         return null;
     }
 };
