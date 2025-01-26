@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { APISuccessResponse, APIErrorResponse } from "../types/types";
 
+/**
+ * API response handler
+ */
 const ApiResponse = {
     success: (
         req: Request,

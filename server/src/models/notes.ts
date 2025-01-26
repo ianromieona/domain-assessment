@@ -3,7 +3,7 @@ import config from "../config/config";
 
 /**
  * Get all notes
- * @param param0 
+ * @param param0
  * @returns Note[] | null
  */
 const getAll = async ({
@@ -15,33 +15,58 @@ const getAll = async ({
     limit: number;
     offset: number;
     order: "asc" | "desc";
-    query: string
+    query: string;
 }) => {
     try {
-        let queryRef = db.collection(config.collection_name)
+        let queryRef = db
+            .collection(config.collection_name)
             .orderBy("created_at", order)
             .offset(offset)
             .limit(limit);
 
         if (query) {
-            queryRef = queryRef.where('title', '>=', query)
-                               .where('title', '<=', query + '\uf8ff')
-                               .where('description', '>=', query)
-                               .where('description', '<=', query + '\uf8ff');
+            console.log("query", query);
+            const queryTitle = queryRef
+                .where("title", ">=", query)
+                .where("title", "<=", query + "\uf8ff");
+            const queryDescription = queryRef
+                .where("description", ">=", query)
+                .where("description", "<=", query + "\uf8ff");
+
+            const [titleSnapshot, descriptionSnapshot] = await Promise.all([
+                queryTitle.get(),
+                queryDescription.get(),
+            ]);
+            const results: any = [];
+
+            // Add matches from title query
+            titleSnapshot.forEach((doc) => {
+                results.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Add matches from description query
+            descriptionSnapshot.forEach((doc) => {
+                // Avoid duplicating documents already in the results
+                if (!results.find((note: any) => note.id === doc.id)) {
+                    results.push({ id: doc.id, ...doc.data() });
+                }
+            });
+
+            return results;
+        } else {
+            const snapshot = await queryRef.get();
+
+            const data = snapshot.docs.map((doc: any) => {
+                const docData = doc.data();
+                const createdAt = docData.created_at.toDate();
+                return {
+                    id: doc.id,
+                    ...docData,
+                    created_at: createdAt,
+                };
+            });
+            return data;
         }
-
-        const snapshot = await queryRef.get();
-
-        const data = snapshot.docs.map((doc: any) => {
-            const docData = doc.data();
-            const createdAt = docData.created_at.toDate();
-            return {
-                id: doc.id,
-                ...docData,
-                created_at: createdAt,
-            };
-        });
-        return data;
     } catch (e: any) {
         console.log(e);
         return [];
@@ -50,7 +75,7 @@ const getAll = async ({
 
 /**
  * Get note by id
- * @param id 
+ * @param id
  * @returns Note | null
  */
 const getById = async (id: string) => {
@@ -75,7 +100,7 @@ const getById = async (id: string) => {
 
 /**
  * Create new note
- * @param id 
+ * @param id
  * @returns Note | null
  */
 const create = async ({
@@ -107,7 +132,7 @@ const create = async ({
 
 /**
  * Update note
- * @param id 
+ * @param id
  * @returns Note | null
  */
 const update = async (
@@ -137,7 +162,7 @@ const update = async (
 
 /**
  * Remove note
- * @param id 
+ * @param id
  * @returns Note | null
  */
 const remove = async (id: string) => {

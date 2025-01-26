@@ -5,13 +5,23 @@ import { Request, Response } from "express";
 import ApiResponse from "../middlewares/api-responses";
 import { NoteBody } from "../types/types";
 
+/**
+ * Get all notes
+ * @param req
+ * @param res
+ */
 const getAll = async (req: Request, res: Response) => {
     try {
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = parseInt(req.query.offset as string) || 0;
-        const query = req.query.query as string|| "";
+        const query = (req.query.query as string) || "";
 
-        const data = await notesModel.getAll({ limit, offset, order: "desc", query });
+        const data = await notesModel.getAll({
+            limit,
+            offset,
+            order: "desc",
+            query,
+        });
 
         ApiResponse.success(req, res, "Note successfully retrieved", data);
     } catch (e: any) {
@@ -19,6 +29,11 @@ const getAll = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Create a new note
+ * @param req
+ * @param res
+ */
 const create = async (req: Request, res: Response) => {
     const { title, description }: NoteBody = req.body;
 
@@ -38,6 +53,11 @@ const create = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Update a new note
+ * @param req
+ * @param res
+ */
 const update = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { title, description }: Partial<NoteBody> = req.body;
@@ -61,6 +81,11 @@ const update = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Remove a new note
+ * @param req
+ * @param res
+ */
 const remove = async (req: Request, res: Response) => {
     const { id } = req.params;
 
