@@ -1,6 +1,9 @@
 import express, { Request, Response } from "express";
 import routes from "./routes";
-var cors = require("cors");
+import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const PORT = 4000;

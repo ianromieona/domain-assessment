@@ -25,7 +25,6 @@ const getAll = async ({
             .limit(limit);
 
         if (query) {
-            console.log("query", query);
             const queryTitle = queryRef
                 .where("title", ">=", query)
                 .where("title", "<=", query + "\uf8ff");

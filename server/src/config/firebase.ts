@@ -1,12 +1,26 @@
 import admin from "firebase-admin";
+import dotenv from "dotenv";
 
+dotenv.config();
 // Import the service account key JSON
-import serviceAccount from "./tst-code-firebase-adminsdk-fbsvc-622b9d93b5.json";
 
-const serviceAccountKey = serviceAccount as any;
+const firebaseConfig = {
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n") || "",
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    type: "service_account",
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    client_x509_cert_url:
+        "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40tst-code-ef0fb.iam.gserviceaccount.com",
+    universe_domain: "googleapis.com",
+};
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountKey),
+    credential: admin.credential.cert(firebaseConfig as any),
 });
 
 const db = admin.firestore();

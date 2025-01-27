@@ -2,6 +2,8 @@ import request from "supertest";
 import app from "../src/app";
 
 describe("Notes API", () => {
+    let newNoteId: string;
+
     it("should get all notes", async () => {
         const response = await request(app).get("/api/notes");
         expect(response.status).toBe(200);
@@ -15,10 +17,12 @@ describe("Notes API", () => {
         expect(response.body.data).toHaveProperty("id");
         expect(response.body.data.title).toBe(newNote.title);
         expect(response.body.data.description).toBe(newNote.description);
+
+        newNoteId = response.body.data.id;
     });
 
     it("should update a note", async () => {
-        const noteId = "Wh0RSgyybEcpyLkhVMue";
+        const noteId = newNoteId;
         const updatedNote = {
             title: "Jest test update",
             description: "Jest test description",
@@ -31,9 +35,9 @@ describe("Notes API", () => {
         expect(response.body.data.description).toBe(updatedNote.description);
     });
 
-    // it("should delete a note", async () => {
-    //     const noteId = "j6SCi0G9gFFCYMZv7cOz"; // Replace with a valid note ID
-    //     const response = await request(app).delete(`/api/notes/${noteId}`);
-    //     expect(response.status).toBe(200);
-    // });
+    it("should delete a note", async () => {
+        const noteId = newNoteId;
+        const response = await request(app).delete(`/api/notes/${noteId}`);
+        expect(response.status).toBe(200);
+    });
 });

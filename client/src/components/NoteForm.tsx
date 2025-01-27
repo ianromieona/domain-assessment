@@ -1,16 +1,23 @@
 import React from "react";
-import { NoteBody } from "../config/types";
+
+// Services / Utils
+import { NoteBody, NoteStoreType } from "../config/types";
 import { api } from "../api";
 import { h } from "../helpers";
 
-const NoteForm: React.FC<{
-    onSuccess: (newResponse: NoteBody) => void;
-    onCancel: () => void;
-    selectedNote?: NoteBody | null;
-}> = ({ onSuccess, onCancel, selectedNote = null }) => {
+// Store
+import useNoteStore from "../stores/useNoteStore";
+
+const NoteForm: React.FC<{}> = ({}) => {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [errors, setErrors] = React.useState<string[]>([]);
-
+    const {
+        addNote,
+        updateNote: editNote,
+        setSelected,
+        setFormMode,
+        selectedNote,
+    } = useNoteStore() as NoteStoreType;
     /**
      * Create request action
      * @param body
@@ -77,7 +84,13 @@ const NoteForm: React.FC<{
                     selectedNote ? "updated" : "created"
                 }`,
             });
-            onSuccess(data);
+            if (selectedNote) {
+                editNote(data);
+            } else {
+                addNote(data);
+            }
+            setSelected(data);
+            setFormMode(false);
         } catch (error) {
             h.general.alert("error", { message: "Something went wrong." });
         } finally {
@@ -146,7 +159,7 @@ const NoteForm: React.FC<{
                         className="bg-gray-500 text-white px-3 py-2 text-xs rounded-md hover:bg-gray-700"
                         onClick={(e) => {
                             e.preventDefault();
-                            onCancel();
+                            setFormMode(false);
                         }}
                     >
                         Cancel

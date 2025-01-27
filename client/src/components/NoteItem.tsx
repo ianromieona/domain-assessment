@@ -1,16 +1,26 @@
-import React from "react";
-import { NoteBody } from "../config/types";
+import React, { useMemo } from "react";
+
+// Services/Utils
+import { NoteBody, NoteStoreType } from "../config/types";
 import styles from "./Note.module.css";
+
+// Store
+import useNoteStore from "../stores/useNoteStore";
 
 type NoteItemProps = {
     note: NoteBody;
-    onClick: () => void;
-    isSelected: boolean;
 };
 
-const NoteItem: React.FC<NoteItemProps> = ({ note, onClick, isSelected }) => {
+const NoteItem: React.FC<NoteItemProps> = ({ note }) => {
+    const { selectedNote, setSelected } = useNoteStore() as NoteStoreType;
+
+    const isSelected = useMemo(
+        () => selectedNote?.id === note.id,
+        [selectedNote]
+    );
+
     return (
-        <div className={`group `} onClick={onClick}>
+        <div className={`group `} onClick={() => setSelected(note)}>
             <div
                 className={`p-2 my-1 group-hover:bg-gray-800 rounded-lg cursor-pointer border ${
                     isSelected ? "bg-gray-800 border-gray-100" : ""

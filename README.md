@@ -7,6 +7,7 @@ Client.
 -   ReactJS
 -   Typescript
 -   TailwindCSS
+-   Zustand
 
 Server
 
@@ -55,3 +56,4 @@ npm test
 ### Notes
 
 -   Selected **Firebase** as the db for faster implementation, simple note app dont have complex queries and flexible structure
+-   Selected **Zustand** for the storage / action management
