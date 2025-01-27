@@ -30,6 +30,8 @@ npm run start
 
 Install the dependencies and devDependencies and start the server of the server.
 
+Copy `.env` file to server folder, Kindly look for the `.env` file I sent over the email. (Firebase detects and disables the db account if happened found publicly)
+
 ```sh
 cd server
 npm install
