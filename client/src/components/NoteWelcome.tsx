@@ -14,11 +14,13 @@ export default function NoteWelcome() {
     return (
         <div className="p-2 flex flex-col items-center justify-center h-full">
             <NoteIcon width={100} />
-            <h3 className="font-light text-gray-600">Please select a note</h3>
+            <h3 className="font-light text-gray-600 poppins-regular">
+                Please select a note
+            </h3>
             <button
                 type="button"
                 onClick={() => setFormMode(true)}
-                className="border border-1 border-solid border-black text-black px-3 py-2 text-xs rounded-md hover:bg-black hover:text-white mt-5"
+                className="border border-1 border-solid border-black text-black px-3 py-2 text-xs rounded-md hover:bg-black hover:text-white mt-5 poppins-bold"
             >
                 Create a new note
             </button>

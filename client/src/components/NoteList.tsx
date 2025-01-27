@@ -119,7 +119,6 @@ export default function NoteList() {
             !loading &&
             hasMore
         ) {
-            console.log("ad");
             setPage((prevPage) => prevPage + 1);
         }
     };

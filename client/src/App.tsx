@@ -17,8 +17,11 @@ function App() {
     const { selectedNote, formMode } = useNoteStore() as NoteStoreType;
 
     return (
-        <div className="App">
-            <div className="flex shadow-lg h-screen">
+        <div className="App py-3">
+            <div
+                className="container mx-auto  flex shadow-lg max-h-screen border border-solid border-gray-300 rounded-lg overflow-hidden"
+                style={{ height: "800px" }}
+            >
                 <div className="w-72 border-r border-solid border-gray-300 flex flex-col">
                     <NoteList />
                 </div>

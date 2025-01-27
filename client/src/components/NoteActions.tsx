@@ -50,13 +50,13 @@ const NoteActions: React.FC<{}> = ({}) => {
         >
             <div>
                 <button
-                    className="border border-1 border-solid border-black text-black px-3 py-2 text-xs rounded-md mr-2 hover:bg-black hover:text-white"
+                    className="border border-1 border-solid border-black text-black px-3 py-2 text-xs rounded-md mr-2 hover:bg-black hover:text-white poppins-bold"
                     onClick={() => setFormMode(true)}
                 >
-                    Create new note
+                    Create a new note
                 </button>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mr-3">
                 <button onClick={() => editMode()} title="Edit note">
                     <EditIcon width={20} />
                 </button>

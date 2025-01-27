@@ -101,7 +101,7 @@ const NoteForm: React.FC<{}> = ({}) => {
     return (
         <div>
             <h1
-                className="text-md font-light bg-gray-100 p-2 flex items-center "
+                className="text-md font-light bg-gray-100 p-2 flex items-center poppins-bold "
                 style={{ height: "50px" }}
             >
                 {!selectedNote ? "Create a Note" : "Edit Note"}
@@ -110,7 +110,7 @@ const NoteForm: React.FC<{}> = ({}) => {
                 <div className="mb-4">
                     <label
                         htmlFor="title"
-                        className="block text-sm font-medium text-gray-700"
+                        className="block text-sm font-medium text-gray-700 poppins-bold"
                     >
                         Title
                     </label>
@@ -125,7 +125,7 @@ const NoteForm: React.FC<{}> = ({}) => {
                         disabled={loading}
                     />
                     {errors.includes("Title is required") && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-500 text-xs mt-1 poppins-regular">
                             Title is required
                         </p>
                     )}
@@ -133,7 +133,7 @@ const NoteForm: React.FC<{}> = ({}) => {
                 <div className="mb-4">
                     <label
                         htmlFor="description"
-                        className="block text-sm font-medium text-gray-700"
+                        className="block text-sm font-medium text-gray-700 poppins-bold"
                     >
                         Description
                     </label>
@@ -148,7 +148,7 @@ const NoteForm: React.FC<{}> = ({}) => {
                         rows={5}
                     />
                     {errors.includes("Description is required") && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-500 text-xs mt-1 poppins-regular">
                             Description is required
                         </p>
                     )}
@@ -156,7 +156,7 @@ const NoteForm: React.FC<{}> = ({}) => {
                 <div className="flex justify-between">
                     <button
                         type="button"
-                        className="bg-gray-500 text-white px-3 py-2 text-xs rounded-md hover:bg-gray-700"
+                        className="bg-gray-500 text-white px-3 py-2 text-xs rounded-md hover:bg-gray-700 poppins-semibold"
                         onClick={(e) => {
                             e.preventDefault();
                             setFormMode(false);
@@ -166,7 +166,7 @@ const NoteForm: React.FC<{}> = ({}) => {
                     </button>
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white px-3 py-2 text-xs rounded-md hover:bg-blue-700"
+                        className="bg-blue-500 text-white px-3 py-2 text-xs rounded-md hover:bg-blue-700 poppins-semibold"
                         disabled={loading}
                     >
                         {loading ? "Loading..." : "Submit"}

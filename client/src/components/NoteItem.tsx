@@ -27,14 +27,14 @@ const NoteItem: React.FC<NoteItemProps> = ({ note }) => {
                 }`}
             >
                 <h2
-                    className={`text-sm font-normal mb-1 truncate group-hover:text-white ${
+                    className={`poppins-semibold mb-1 truncate group-hover:text-white poppins-bold ${
                         isSelected ? "text-white" : ""
                     } ${styles.noteItemTitle}`}
                 >
                     {note.title}
                 </h2>
                 <p
-                    className={`truncate group-hover:text-white ${
+                    className={`poppins-light truncate group-hover:text-white ${
                         isSelected ? "text-white" : "text-gray-600 "
                     } ${styles.noteItemDescription}`}
                 >
